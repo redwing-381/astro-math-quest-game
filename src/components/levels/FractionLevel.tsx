@@ -4,73 +4,107 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Rocket, Fuel, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-
 interface FractionLevelProps {
   onBack: () => void;
   onComplete: (points: number, badge: string) => void;
 }
-
-export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete }) => {
+export const FractionLevel: React.FC<FractionLevelProps> = ({
+  onBack,
+  onComplete
+}) => {
   const [stage, setStage] = useState(1);
-  const [problem, setProblem] = useState({ num1: 1, den1: 4, num2: 1, den2: 2 });
-  const [userAnswer, setUserAnswer] = useState({ numerator: '', denominator: '' });
+  const [problem, setProblem] = useState({
+    num1: 1,
+    den1: 4,
+    num2: 1,
+    den2: 2
+  });
+  const [userAnswer, setUserAnswer] = useState({
+    numerator: '',
+    denominator: ''
+  });
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [fuelLevel, setFuelLevel] = useState(20);
   const [storyText, setStoryText] = useState('');
-
-  const storyStages = [
-    "🚀 Welcome to Planet Fractia! Your spaceship is running low on fuel...",
-    "⚡ Great job! But you need more fuel for the journey ahead!",
-    "🛸 Almost there! One more fuel boost to reach the stars!",
-    "🌟 Amazing! Your ship is fully fueled and ready for deep space exploration!"
-  ];
-
+  const storyStages = ["🚀 Welcome to Planet Fractia! Your spaceship is running low on fuel...", "⚡ Great job! But you need more fuel for the journey ahead!", "🛸 Almost there! One more fuel boost to reach the stars!", "🌟 Amazing! Your ship is fully fueled and ready for deep space exploration!"];
   const generateProblem = () => {
-    const difficulties = [
-      [{ num: 1, den: 2 }, { num: 1, den: 4 }], // Stage 1: Easy
-      [{ num: 1, den: 3 }, { num: 2, den: 3 }, { num: 1, den: 6 }], // Stage 2: Medium
-      [{ num: 2, den: 5 }, { num: 3, den: 4 }, { num: 5, den: 6 }] // Stage 3: Hard
+    const difficulties = [[{
+      num: 1,
+      den: 2
+    }, {
+      num: 1,
+      den: 4
+    }],
+    // Stage 1: Easy
+    [{
+      num: 1,
+      den: 3
+    }, {
+      num: 2,
+      den: 3
+    }, {
+      num: 1,
+      den: 6
+    }],
+    // Stage 2: Medium
+    [{
+      num: 2,
+      den: 5
+    }, {
+      num: 3,
+      den: 4
+    }, {
+      num: 5,
+      den: 6
+    }] // Stage 3: Hard
     ];
-    
     const currentDifficulty = difficulties[Math.min(stage - 1, 2)];
     const frac1 = currentDifficulty[Math.floor(Math.random() * currentDifficulty.length)];
     const frac2 = currentDifficulty[Math.floor(Math.random() * currentDifficulty.length)];
-    
-    setProblem({ num1: frac1.num, den1: frac1.den, num2: frac2.num, den2: frac2.den });
+    setProblem({
+      num1: frac1.num,
+      den1: frac1.den,
+      num2: frac2.num,
+      den2: frac2.den
+    });
     setStoryText(storyStages[Math.min(stage - 1, 3)]);
   };
-
   useEffect(() => {
     generateProblem();
   }, [stage]);
-
   const calculateAnswer = () => {
-    const { num1, den1, num2, den2 } = problem;
-    const lcm = (den1 * den2) / gcd(den1, den2);
-    const newNum1 = (num1 * lcm) / den1;
-    const newNum2 = (num2 * lcm) / den2;
+    const {
+      num1,
+      den1,
+      num2,
+      den2
+    } = problem;
+    const lcm = den1 * den2 / gcd(den1, den2);
+    const newNum1 = num1 * lcm / den1;
+    const newNum2 = num2 * lcm / den2;
     const resultNum = newNum1 + newNum2;
-    
     const commonFactor = gcd(resultNum, lcm);
-    return { numerator: resultNum / commonFactor, denominator: lcm / commonFactor };
+    return {
+      numerator: resultNum / commonFactor,
+      denominator: lcm / commonFactor
+    };
   };
-
   const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
-
   const checkAnswer = () => {
     const correct = calculateAnswer();
     const userNum = parseInt(userAnswer.numerator);
     const userDen = parseInt(userAnswer.denominator);
-
     if (userNum === correct.numerator && userDen === correct.denominator) {
       const newFuelLevel = Math.min(fuelLevel + 25, 100);
       setFuelLevel(newFuelLevel);
-      
       if (stage < 3) {
         toast.success(`🎉 Stage ${stage} Complete! Moving to next challenge...`);
         setStage(prev => prev + 1);
-        setUserAnswer({ numerator: '', denominator: '' });
+        setUserAnswer({
+          numerator: '',
+          denominator: ''
+        });
         setAttempts(0);
         setShowHint(false);
       } else {
@@ -87,33 +121,25 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
       toast.error("Not quite right. Try again!");
     }
   };
-
-  const FractionBar = ({ numerator, denominator, color }: { numerator: number, denominator: number, color: string }) => (
-    <div className="flex flex-col items-center gap-2">
+  const FractionBar = ({
+    numerator,
+    denominator,
+    color
+  }: {
+    numerator: number;
+    denominator: number;
+    color: string;
+  }) => <div className="flex flex-col items-center gap-2">
       <div className="flex border-2 border-white rounded">
-        {[...Array(denominator)].map((_, i) => (
-          <div
-            key={i}
-            className={`w-8 h-12 border-r border-white last:border-r-0 ${
-              i < numerator ? color : 'bg-gray-300'
-            }`}
-          />
-        ))}
+        {[...Array(denominator)].map((_, i) => <div key={i} className={`w-8 h-12 border-r border-white last:border-r-0 ${i < numerator ? color : 'bg-gray-300'}`} />)}
       </div>
       <span className="text-white font-bold">{numerator}/{denominator}</span>
-    </div>
-  );
-
-  return (
-    <div className="container mx-auto px-6 py-8">
+    </div>;
+  return <div className="container mx-auto px-6 py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Button 
-            onClick={onBack} 
-            variant="outline" 
-            className="bg-slate-700 hover:bg-slate-600 text-white border-slate-500 hover:border-slate-400"
-          >
+          <Button onClick={onBack} variant="outline" className="bg-slate-700 hover:bg-slate-600 text-white border-slate-500 hover:border-slate-400">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Map
           </Button>
@@ -126,7 +152,7 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
 
         {/* Story Card */}
         <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/30 backdrop-blur-sm mb-6">
-          <div className="p-4 text-center">
+          <div className="p-4 text-center bg-emerald-600">
             <p className="text-white text-lg font-medium">{storyText}</p>
           </div>
         </Card>
@@ -182,52 +208,37 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
                   <span className="text-white">Fuel Level: {fuelLevel}%</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-4">
-                  <div 
-                    className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-4 rounded-full transition-all duration-1000"
-                    style={{ width: `${fuelLevel}%` }}
-                  ></div>
+                  <div className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-4 rounded-full transition-all duration-1000" style={{
+                  width: `${fuelLevel}%`
+                }}></div>
                 </div>
               </div>
 
               {/* Answer Input */}
               <div className="space-y-4">
                 <div className="flex items-center justify-center gap-4">
-                  <Input
-                    type="number"
-                    placeholder="Numerator"
-                    value={userAnswer.numerator}
-                    onChange={(e) => setUserAnswer(prev => ({ ...prev, numerator: e.target.value }))}
-                    className="w-24 text-center bg-white/20 border-white/30 text-white"
-                  />
+                  <Input type="number" placeholder="Numerator" value={userAnswer.numerator} onChange={e => setUserAnswer(prev => ({
+                  ...prev,
+                  numerator: e.target.value
+                }))} className="w-24 text-center bg-white/20 border-white/30 text-white" />
                   <span className="text-white text-2xl">/</span>
-                  <Input
-                    type="number"
-                    placeholder="Denominator"
-                    value={userAnswer.denominator}
-                    onChange={(e) => setUserAnswer(prev => ({ ...prev, denominator: e.target.value }))}
-                    className="w-24 text-center bg-white/20 border-white/30 text-white"
-                  />
+                  <Input type="number" placeholder="Denominator" value={userAnswer.denominator} onChange={e => setUserAnswer(prev => ({
+                  ...prev,
+                  denominator: e.target.value
+                }))} className="w-24 text-center bg-white/20 border-white/30 text-white" />
                 </div>
 
-                <Button 
-                  onClick={checkAnswer}
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3"
-                  disabled={!userAnswer.numerator || !userAnswer.denominator}
-                >
+                <Button onClick={checkAnswer} className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3" disabled={!userAnswer.numerator || !userAnswer.denominator}>
                   Add Fuel & Launch!
                 </Button>
 
-                <Button 
-                  onClick={generateProblem}
-                  className="w-full bg-slate-600 hover:bg-slate-500 text-white border-slate-400"
-                >
+                <Button onClick={generateProblem} className="w-full bg-slate-600 hover:bg-slate-500 text-white border-slate-400">
                   New Problem
                 </Button>
               </div>
 
               {/* Hint System */}
-              {showHint && (
-                <Card className="mt-6 bg-yellow-500/20 border-yellow-400/30">
+              {showHint && <Card className="mt-6 bg-yellow-500/20 border-yellow-400/30">
                   <div className="p-4">
                     <h4 className="text-yellow-400 font-bold mb-2 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4" />
@@ -238,12 +249,10 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
                       Convert {problem.num1}/{problem.den1} and {problem.num2}/{problem.den2} to have the same bottom number.
                     </p>
                   </div>
-                </Card>
-              )}
+                </Card>}
             </div>
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
