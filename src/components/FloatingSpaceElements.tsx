@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, Box, Torus, Text3D } from '@react-three/drei';
+import { Sphere, Box } from '@react-three/drei';
 import * as THREE from 'three';
 
 const FloatingPlanet = ({ position, color, scale = 1 }: { position: [number, number, number], color: string, scale?: number }) => {
@@ -39,7 +39,7 @@ const FloatingCube = ({ position }: { position: [number, number, number] }) => {
   );
 };
 
-const FloatingTorus = ({ position }: { position: [number, number, number] }) => {
+const FloatingRing = ({ position }: { position: [number, number, number] }) => {
   const meshRef = useRef<THREE.Mesh>(null!);
   
   useFrame((state) => {
@@ -51,9 +51,10 @@ const FloatingTorus = ({ position }: { position: [number, number, number] }) => 
   });
 
   return (
-    <Torus ref={meshRef} position={position} args={[0.3, 0.1, 16, 100]}>
+    <mesh ref={meshRef} position={position}>
+      <torusGeometry args={[0.3, 0.1, 16, 100]} />
       <meshStandardMaterial color="#10B981" transparent opacity={0.5} />
-    </Torus>
+    </mesh>
   );
 };
 
@@ -75,10 +76,10 @@ const SpaceScene = () => {
       <FloatingCube position={[-3, -1, -2]} />
       <FloatingCube position={[1, -2, -3]} />
       
-      {/* Floating Torus rings */}
-      <FloatingTorus position={[4, 0, -2]} />
-      <FloatingTorus position={[-1, 2, -1]} />
-      <FloatingTorus position={[-4, -1, -3]} />
+      {/* Floating Rings */}
+      <FloatingRing position={[4, 0, -2]} />
+      <FloatingRing position={[-1, 2, -1]} />
+      <FloatingRing position={[-4, -1, -3]} />
     </>
   );
 };
