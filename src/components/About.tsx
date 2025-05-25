@@ -1,20 +1,18 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Code, Calculator, Shapes, Zap } from 'lucide-react';
-
 interface AboutProps {
   onBack: () => void;
 }
-
-export const About: React.FC<AboutProps> = ({ onBack }) => {
-  return (
-    <div className="container mx-auto px-6 py-8">
+export const About: React.FC<AboutProps> = ({
+  onBack
+}) => {
+  return <div className="container mx-auto px-6 py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Button onClick={onBack} variant="outline" className="text-white border-white/20">
+          <Button onClick={onBack} variant="outline" className="text-white border-white/20 bg-stone-600 hover:bg-stone-500">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Game
           </Button>
@@ -179,6 +177,5 @@ export const About: React.FC<AboutProps> = ({ onBack }) => {
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
