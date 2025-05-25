@@ -147,7 +147,7 @@ export const About: React.FC<AboutProps> = ({
 
         {/* Technical Features */}
         <Card className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-400/30 backdrop-blur-sm mt-8">
-          <div className="p-6">
+          <div className="p-6 bg-emerald-600">
             <h3 className="text-2xl font-bold text-white mb-4 text-center">Key Technical Features</h3>
             <div className="grid md:grid-cols-3 gap-6 text-white/80">
               <div className="text-center">
