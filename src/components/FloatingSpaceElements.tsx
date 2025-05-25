@@ -5,12 +5,12 @@ import { Sphere, Box } from '@react-three/drei';
 import * as THREE from 'three';
 
 const FloatingPlanet = ({ position, color, scale = 1 }: { position: [number, number, number], color: string, scale?: number }) => {
-  const meshRef = useRef<THREE.Mesh>(null!);
+  const meshRef = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.01;
-      meshRef.current.position.y += Math.sin(state.clock.elapsedTime + position[0]) * 0.002;
+      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime + position[0]) * 0.002;
     }
   });
 
@@ -22,13 +22,13 @@ const FloatingPlanet = ({ position, color, scale = 1 }: { position: [number, num
 };
 
 const FloatingCube = ({ position }: { position: [number, number, number] }) => {
-  const meshRef = useRef<THREE.Mesh>(null!);
+  const meshRef = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.x += 0.01;
       meshRef.current.rotation.y += 0.01;
-      meshRef.current.position.x += Math.sin(state.clock.elapsedTime * 0.5 + position[1]) * 0.001;
+      meshRef.current.position.x = position[0] + Math.sin(state.clock.elapsedTime * 0.5 + position[1]) * 0.001;
     }
   });
 
@@ -40,13 +40,13 @@ const FloatingCube = ({ position }: { position: [number, number, number] }) => {
 };
 
 const FloatingRing = ({ position }: { position: [number, number, number] }) => {
-  const meshRef = useRef<THREE.Mesh>(null!);
+  const meshRef = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.x += 0.02;
       meshRef.current.rotation.z += 0.01;
-      meshRef.current.position.z += Math.cos(state.clock.elapsedTime * 0.3 + position[0]) * 0.001;
+      meshRef.current.position.z = position[2] + Math.cos(state.clock.elapsedTime * 0.3 + position[0]) * 0.001;
     }
   });
 
