@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Rocket, Fuel } from 'lucide-react';
+import { ArrowLeft, Rocket, Fuel, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FractionLevelProps {
@@ -12,36 +11,47 @@ interface FractionLevelProps {
 }
 
 export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete }) => {
+  const [stage, setStage] = useState(1);
   const [problem, setProblem] = useState({ num1: 1, den1: 4, num2: 1, den2: 2 });
   const [userAnswer, setUserAnswer] = useState({ numerator: '', denominator: '' });
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [fuelLevel, setFuelLevel] = useState(20);
+  const [storyText, setStoryText] = useState('');
+
+  const storyStages = [
+    "🚀 Welcome to Planet Fractia! Your spaceship is running low on fuel...",
+    "⚡ Great job! But you need more fuel for the journey ahead!",
+    "🛸 Almost there! One more fuel boost to reach the stars!",
+    "🌟 Amazing! Your ship is fully fueled and ready for deep space exploration!"
+  ];
 
   const generateProblem = () => {
-    const fractions = [
-      { num: 1, den: 2 }, { num: 1, den: 3 }, { num: 1, den: 4 }, 
-      { num: 2, den: 3 }, { num: 3, den: 4 }, { num: 1, den: 6 }
+    const difficulties = [
+      [{ num: 1, den: 2 }, { num: 1, den: 4 }], // Stage 1: Easy
+      [{ num: 1, den: 3 }, { num: 2, den: 3 }, { num: 1, den: 6 }], // Stage 2: Medium
+      [{ num: 2, den: 5 }, { num: 3, den: 4 }, { num: 5, den: 6 }] // Stage 3: Hard
     ];
-    const frac1 = fractions[Math.floor(Math.random() * fractions.length)];
-    const frac2 = fractions[Math.floor(Math.random() * fractions.length)];
+    
+    const currentDifficulty = difficulties[Math.min(stage - 1, 2)];
+    const frac1 = currentDifficulty[Math.floor(Math.random() * currentDifficulty.length)];
+    const frac2 = currentDifficulty[Math.floor(Math.random() * currentDifficulty.length)];
     
     setProblem({ num1: frac1.num, den1: frac1.den, num2: frac2.num, den2: frac2.den });
+    setStoryText(storyStages[Math.min(stage - 1, 3)]);
   };
 
   useEffect(() => {
     generateProblem();
-  }, []);
+  }, [stage]);
 
   const calculateAnswer = () => {
     const { num1, den1, num2, den2 } = problem;
-    // Find common denominator
     const lcm = (den1 * den2) / gcd(den1, den2);
     const newNum1 = (num1 * lcm) / den1;
     const newNum2 = (num2 * lcm) / den2;
     const resultNum = newNum1 + newNum2;
     
-    // Simplify the fraction
     const commonFactor = gcd(resultNum, lcm);
     return { numerator: resultNum / commonFactor, denominator: lcm / commonFactor };
   };
@@ -54,11 +64,21 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
     const userDen = parseInt(userAnswer.denominator);
 
     if (userNum === correct.numerator && userDen === correct.denominator) {
-      setFuelLevel(100);
-      toast.success("🚀 Excellent! Spaceship fueled and ready for launch!");
-      setTimeout(() => {
-        onComplete(100, 'Fraction Star');
-      }, 2000);
+      const newFuelLevel = Math.min(fuelLevel + 25, 100);
+      setFuelLevel(newFuelLevel);
+      
+      if (stage < 3) {
+        toast.success(`🎉 Stage ${stage} Complete! Moving to next challenge...`);
+        setStage(prev => prev + 1);
+        setUserAnswer({ numerator: '', denominator: '' });
+        setAttempts(0);
+        setShowHint(false);
+      } else {
+        toast.success("🚀 Mission Complete! You're now a Fraction Master!");
+        setTimeout(() => {
+          onComplete(150, 'Fraction Star');
+        }, 2000);
+      }
     } else {
       setAttempts(prev => prev + 1);
       if (attempts >= 1) {
@@ -89,13 +109,27 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Button onClick={onBack} variant="outline" className="text-white border-white/20">
+          <Button 
+            onClick={onBack} 
+            variant="outline" 
+            className="bg-slate-700 hover:bg-slate-600 text-white border-slate-500 hover:border-slate-400"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Map
           </Button>
-          <h1 className="text-3xl font-bold text-white">Planet Fractia Mission</h1>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-white">Planet Fractia Mission</h1>
+            <p className="text-cyan-200">Stage {stage} of 3</p>
+          </div>
           <div className="w-24"></div>
         </div>
+
+        {/* Story Card */}
+        <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/30 backdrop-blur-sm mb-6">
+          <div className="p-4 text-center">
+            <p className="text-white text-lg font-medium">{storyText}</p>
+          </div>
+        </Card>
 
         {/* Mission Briefing */}
         <Card className="bg-orange-500/20 border-orange-400/30 backdrop-blur-sm mb-8">
@@ -185,8 +219,7 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
 
                 <Button 
                   onClick={generateProblem}
-                  variant="outline"
-                  className="w-full text-white border-white/30"
+                  className="w-full bg-slate-600 hover:bg-slate-500 text-white border-slate-400"
                 >
                   New Problem
                 </Button>
@@ -196,7 +229,10 @@ export const FractionLevel: React.FC<FractionLevelProps> = ({ onBack, onComplete
               {showHint && (
                 <Card className="mt-6 bg-yellow-500/20 border-yellow-400/30">
                   <div className="p-4">
-                    <h4 className="text-yellow-400 font-bold mb-2">🔍 Hint:</h4>
+                    <h4 className="text-yellow-400 font-bold mb-2 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Hint:
+                    </h4>
                     <p className="text-white text-sm">
                       To add fractions, find a common denominator first! 
                       Convert {problem.num1}/{problem.den1} and {problem.num2}/{problem.den2} to have the same bottom number.

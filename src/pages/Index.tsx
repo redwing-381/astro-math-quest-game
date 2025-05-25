@@ -4,12 +4,13 @@ import { GameMap } from '@/components/GameMap';
 import { FractionLevel } from '@/components/levels/FractionLevel';
 import { AlgebraLevel } from '@/components/levels/AlgebraLevel';
 import { GeometryLevel } from '@/components/levels/GeometryLevel';
+import { PhysicsLevel } from '@/components/levels/PhysicsLevel';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { About } from '@/components/About';
 import { Button } from '@/components/ui/button';
 import { Rocket, Star, Target } from 'lucide-react';
 
-export type GameLevel = 'map' | 'fractions' | 'algebra' | 'geometry' | 'about';
+export type GameLevel = 'map' | 'fractions' | 'algebra' | 'geometry' | 'physics' | 'about';
 
 const Index = () => {
   const [currentLevel, setCurrentLevel] = useState<GameLevel>('map');
@@ -60,6 +61,16 @@ const Index = () => {
             }}
           />
         );
+      case 'physics':
+        return (
+          <PhysicsLevel 
+            onBack={() => setCurrentLevel('map')}
+            onComplete={(points, badge) => {
+              updatePlayerStats(points, badge, 'physics');
+              setCurrentLevel('map');
+            }}
+          />
+        );
       case 'about':
         return <About onBack={() => setCurrentLevel('map')} />;
       default:
@@ -99,7 +110,7 @@ const Index = () => {
           </h1>
           <Target className="text-green-400 w-8 h-8" />
         </div>
-        <p className="text-cyan-200 text-lg">Math Mission</p>
+        <p className="text-cyan-200 text-lg">Math & Physics Mission</p>
       </header>
 
       {/* Progress Tracker */}

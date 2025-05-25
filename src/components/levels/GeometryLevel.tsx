@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Wrench, Satellite } from 'lucide-react';
+import { ArrowLeft, Wrench, Satellite, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface GeometryLevelProps {
@@ -12,21 +11,43 @@ interface GeometryLevelProps {
 }
 
 export const GeometryLevel: React.FC<GeometryLevelProps> = ({ onBack, onComplete }) => {
+  const [stage, setStage] = useState(1);
   const [problem, setProblem] = useState({ base: 8, height: 6 });
   const [userAnswer, setUserAnswer] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [repairProgress, setRepairProgress] = useState(0);
+  const [storyText, setStoryText] = useState('');
+
+  const storyStages = [
+    "🛰️ Emergency! The satellite's main solar panel is damaged and needs repair...",
+    "🔧 Good progress! But more components need fixing to restore full power!",
+    "⚡ Almost operational! One final repair will bring the satellite back online!",
+    "🌟 Mission accomplished! The satellite is fully operational and transmitting!"
+  ];
 
   const generateProblem = () => {
-    const base = Math.floor(Math.random() * 8) + 4; // 4-12
-    const height = Math.floor(Math.random() * 8) + 3; // 3-11
+    let base, height;
+    
+    // Increase difficulty by stage
+    if (stage === 1) {
+      base = Math.floor(Math.random() * 6) + 4; // 4-10
+      height = Math.floor(Math.random() * 4) + 3; // 3-7
+    } else if (stage === 2) {
+      base = Math.floor(Math.random() * 8) + 6; // 6-14
+      height = Math.floor(Math.random() * 6) + 5; // 5-11
+    } else {
+      base = Math.floor(Math.random() * 10) + 8; // 8-18
+      height = Math.floor(Math.random() * 8) + 7; // 7-15
+    }
+    
     setProblem({ base, height });
+    setStoryText(storyStages[Math.min(stage - 1, 3)]);
   };
 
   useEffect(() => {
     generateProblem();
-  }, []);
+  }, [stage]);
 
   const calculateAnswer = () => {
     return (problem.base * problem.height) / 2;
@@ -37,11 +58,23 @@ export const GeometryLevel: React.FC<GeometryLevelProps> = ({ onBack, onComplete
     const userNum = parseFloat(userAnswer);
 
     if (userNum === correct) {
-      setRepairProgress(100);
-      toast.success("🛰️ Satellite Repaired! Outstanding geometry skills!");
-      setTimeout(() => {
-        onComplete(100, 'Geometry Guru');
-      }, 2000);
+      const newProgress = Math.min(repairProgress + 35, 100);
+      setRepairProgress(newProgress);
+      
+      if (stage < 3) {
+        toast.success(`🎉 Component ${stage} Repaired! Moving to next system...`);
+        setTimeout(() => {
+          setStage(prev => prev + 1);
+          setUserAnswer('');
+          setAttempts(0);
+          setShowHint(false);
+        }, 2000);
+      } else {
+        toast.success("🛰️ Satellite Fully Repaired! You're now a Geometry Master!");
+        setTimeout(() => {
+          onComplete(150, 'Geometry Guru');
+        }, 2000);
+      }
     } else {
       setAttempts(prev => prev + 1);
       if (attempts >= 1) {
@@ -52,7 +85,7 @@ export const GeometryLevel: React.FC<GeometryLevelProps> = ({ onBack, onComplete
   };
 
   const TriangleVisual = () => {
-    const scale = 12; // Scale factor for visualization
+    const scale = 12;
     return (
       <div className="flex justify-center">
         <svg width="300" height="200" className="border border-white/30 rounded bg-slate-800/30">
@@ -110,13 +143,27 @@ export const GeometryLevel: React.FC<GeometryLevelProps> = ({ onBack, onComplete
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Button onClick={onBack} variant="outline" className="text-white border-white/20">
+          <Button 
+            onClick={onBack} 
+            variant="outline" 
+            className="bg-slate-700 hover:bg-slate-600 text-white border-slate-500 hover:border-slate-400"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Map
           </Button>
-          <h1 className="text-3xl font-bold text-white">Satellite Station</h1>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-white">Satellite Station</h1>
+            <p className="text-cyan-200">Repair System {stage} of 3</p>
+          </div>
           <div className="w-24"></div>
         </div>
+
+        {/* Story Card */}
+        <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/30 backdrop-blur-sm mb-6">
+          <div className="p-4 text-center">
+            <p className="text-white text-lg font-medium">{storyText}</p>
+          </div>
+        </Card>
 
         {/* Mission Briefing */}
         <Card className="bg-green-500/20 border-green-400/30 backdrop-blur-sm mb-8">
@@ -214,8 +261,7 @@ export const GeometryLevel: React.FC<GeometryLevelProps> = ({ onBack, onComplete
 
                 <Button 
                   onClick={generateProblem}
-                  variant="outline"
-                  className="w-full text-white border-white/30"
+                  className="w-full bg-slate-600 hover:bg-slate-500 text-white border-slate-400"
                 >
                   New Solar Panel
                 </Button>
@@ -225,7 +271,10 @@ export const GeometryLevel: React.FC<GeometryLevelProps> = ({ onBack, onComplete
               {showHint && (
                 <Card className="mt-6 bg-yellow-500/20 border-yellow-400/30">
                   <div className="p-4">
-                    <h4 className="text-yellow-400 font-bold mb-2">🔍 Hint:</h4>
+                    <h4 className="text-yellow-400 font-bold mb-2 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Hint:
+                    </h4>
                     <p className="text-white text-sm">
                       For a triangle, the area formula is: <strong>(base × height) ÷ 2</strong>
                       <br />

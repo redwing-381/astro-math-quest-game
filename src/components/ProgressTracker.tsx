@@ -16,7 +16,8 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ playerStats })
   const allBadges = [
     { id: 'Fraction Star', color: 'bg-orange-500', icon: '🌟' },
     { id: 'Algebra Ace', color: 'bg-blue-500', icon: '⚡' },
-    { id: 'Geometry Guru', color: 'bg-green-500', icon: '📐' }
+    { id: 'Geometry Guru', color: 'bg-green-500', icon: '📐' },
+    { id: 'Physics Prodigy', color: 'bg-purple-500', icon: '⚛️' }
   ];
 
   return (
@@ -35,14 +36,14 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ playerStats })
           <div className="flex items-center gap-2">
             <Star className="w-6 h-6 text-cyan-400" />
             <span className="text-white font-semibold">
-              Missions: {playerStats.levelsCompleted.length}/3
+              Missions: {playerStats.levelsCompleted.length}/4
             </span>
           </div>
 
           {/* Badges */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-white font-semibold">Badges:</span>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {allBadges.map(badge => (
                 <Badge 
                   key={badge.id}
@@ -52,7 +53,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ playerStats })
                       : 'bg-gray-600'
                   } text-white px-3 py-1`}
                 >
-                  {badge.icon} {badge.id}
+                  {badge.icon} {badge.id.split(' ')[0]}
                 </Badge>
               ))}
             </div>

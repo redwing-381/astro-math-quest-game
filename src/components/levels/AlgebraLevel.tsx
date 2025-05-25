@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Zap, Lock, Unlock } from 'lucide-react';
+import { ArrowLeft, Zap, Lock, Unlock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AlgebraLevelProps {
@@ -12,26 +11,51 @@ interface AlgebraLevelProps {
 }
 
 export const AlgebraLevel: React.FC<AlgebraLevelProps> = ({ onBack, onComplete }) => {
+  const [stage, setStage] = useState(1);
   const [problem, setProblem] = useState({ variable: 'x', coefficient: 1, constant: 5, result: 8 });
   const [userAnswer, setUserAnswer] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [gateUnlocked, setGateUnlocked] = useState(false);
+  const [storyText, setStoryText] = useState('');
+
+  const storyStages = [
+    "🌌 You've reached the Star Gate Alpha! But it's locked with an algebra code...",
+    "⚡ First gate opened! But there are more security layers ahead!",
+    "🔓 Excellent! One final equation stands between you and the stars!",
+    "🌟 All gates unlocked! You've mastered the algebra of the cosmos!"
+  ];
 
   const generateProblem = () => {
     const variables = ['x', 'y', 'z'];
     const variable = variables[Math.floor(Math.random() * variables.length)];
-    const coefficient = Math.floor(Math.random() * 3) + 1; // 1-3
-    const constant = Math.floor(Math.random() * 10) + 1; // 1-10
-    const varValue = Math.floor(Math.random() * 10) + 1; // 1-10
+    
+    let coefficient, constant, varValue;
+    
+    // Increase difficulty by stage
+    if (stage === 1) {
+      coefficient = 1;
+      constant = Math.floor(Math.random() * 5) + 1;
+      varValue = Math.floor(Math.random() * 5) + 1;
+    } else if (stage === 2) {
+      coefficient = Math.floor(Math.random() * 2) + 1;
+      constant = Math.floor(Math.random() * 10) + 1;
+      varValue = Math.floor(Math.random() * 8) + 1;
+    } else {
+      coefficient = Math.floor(Math.random() * 3) + 1;
+      constant = Math.floor(Math.random() * 15) + 1;
+      varValue = Math.floor(Math.random() * 10) + 1;
+    }
+    
     const result = coefficient * varValue + constant;
     
     setProblem({ variable, coefficient, constant, result });
+    setStoryText(storyStages[Math.min(stage - 1, 3)]);
   };
 
   useEffect(() => {
     generateProblem();
-  }, []);
+  }, [stage]);
 
   const calculateAnswer = () => {
     const { coefficient, constant, result } = problem;
@@ -44,10 +68,22 @@ export const AlgebraLevel: React.FC<AlgebraLevelProps> = ({ onBack, onComplete }
 
     if (userNum === correct) {
       setGateUnlocked(true);
-      toast.success("⚡ Star Gate Unlocked! Excellent work!");
-      setTimeout(() => {
-        onComplete(100, 'Algebra Ace');
-      }, 2000);
+      
+      if (stage < 3) {
+        toast.success(`🎉 Gate ${stage} Unlocked! Proceeding to next security layer...`);
+        setTimeout(() => {
+          setStage(prev => prev + 1);
+          setUserAnswer('');
+          setAttempts(0);
+          setShowHint(false);
+          setGateUnlocked(false);
+        }, 2000);
+      } else {
+        toast.success("⚡ All Star Gates Unlocked! You're now an Algebra Master!");
+        setTimeout(() => {
+          onComplete(150, 'Algebra Ace');
+        }, 2000);
+      }
     } else {
       setAttempts(prev => prev + 1);
       if (attempts >= 1) {
@@ -85,13 +121,27 @@ export const AlgebraLevel: React.FC<AlgebraLevelProps> = ({ onBack, onComplete }
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Button onClick={onBack} variant="outline" className="text-white border-white/20">
+          <Button 
+            onClick={onBack} 
+            variant="outline" 
+            className="bg-slate-700 hover:bg-slate-600 text-white border-slate-500 hover:border-slate-400"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Map
           </Button>
-          <h1 className="text-3xl font-bold text-white">Star Gate Alpha</h1>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-white">Star Gate Alpha</h1>
+            <p className="text-cyan-200">Security Layer {stage} of 3</p>
+          </div>
           <div className="w-24"></div>
         </div>
+
+        {/* Story Card */}
+        <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/30 backdrop-blur-sm mb-6">
+          <div className="p-4 text-center">
+            <p className="text-white text-lg font-medium">{storyText}</p>
+          </div>
+        </Card>
 
         {/* Mission Briefing */}
         <Card className="bg-blue-500/20 border-blue-400/30 backdrop-blur-sm mb-8">
@@ -179,8 +229,7 @@ export const AlgebraLevel: React.FC<AlgebraLevelProps> = ({ onBack, onComplete }
 
                 <Button 
                   onClick={generateProblem}
-                  variant="outline"
-                  className="w-full text-white border-white/30"
+                  className="w-full bg-slate-600 hover:bg-slate-500 text-white border-slate-400"
                 >
                   New Equation
                 </Button>
@@ -190,7 +239,10 @@ export const AlgebraLevel: React.FC<AlgebraLevelProps> = ({ onBack, onComplete }
               {showHint && (
                 <Card className="mt-6 bg-yellow-500/20 border-yellow-400/30">
                   <div className="p-4">
-                    <h4 className="text-yellow-400 font-bold mb-2">🔍 Hint:</h4>
+                    <h4 className="text-yellow-400 font-bold mb-2 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Hint:
+                    </h4>
                     <p className="text-white text-sm">
                       To solve {problem.coefficient > 1 ? problem.coefficient : ''}{problem.variable} + {problem.constant} = {problem.result}, 
                       subtract {problem.constant} from both sides first!
