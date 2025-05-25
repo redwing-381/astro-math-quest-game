@@ -1,7 +1,6 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, Box } from '@react-three/drei';
 import * as THREE from 'three';
 
 const FloatingPlanet = ({ position, color, scale = 1 }: { position: [number, number, number], color: string, scale?: number }) => {
@@ -15,9 +14,10 @@ const FloatingPlanet = ({ position, color, scale = 1 }: { position: [number, num
   });
 
   return (
-    <Sphere ref={meshRef} position={position} scale={scale} args={[0.5, 32, 32]}>
+    <mesh ref={meshRef} position={position} scale={scale}>
+      <sphereGeometry args={[0.5, 32, 32]} />
       <meshStandardMaterial color={color} transparent opacity={0.6} />
-    </Sphere>
+    </mesh>
   );
 };
 
@@ -33,9 +33,10 @@ const FloatingCube = ({ position }: { position: [number, number, number] }) => {
   });
 
   return (
-    <Box ref={meshRef} position={position} args={[0.3, 0.3, 0.3]}>
+    <mesh ref={meshRef} position={position}>
+      <boxGeometry args={[0.3, 0.3, 0.3]} />
       <meshStandardMaterial color="#4F46E5" transparent opacity={0.4} />
-    </Box>
+    </mesh>
   );
 };
 
